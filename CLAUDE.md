@@ -13,6 +13,7 @@
 
 **Sister repo (backend):** `D:\JAMK\application-framework\ecommerce-backend`  
 **Backend GitHub:** https://github.com/SharifMasum/ecommerce-backend (private)  
+**Frontend GitHub:** https://github.com/SharifMasum/e-commerce-frontend  
 **Source reference:** `D:\JAMK\application-framework\ecommerce-spring-boot-react\source\react`
 
 ---
@@ -23,6 +24,8 @@
 |---|---|
 | UI framework | React 18 |
 | Routing | React Router DOM v6 |
+| State management | Redux Toolkit + react-redux |
+| HTTP client | Axios (with JWT interceptor) |
 | Component library | MUI (Material UI) v5 + Emotion |
 | Utility CSS | Tailwind CSS v3 |
 | Headless components | Headless UI v1 |
@@ -36,82 +39,154 @@
 
 ```
 src/
-├── App.js                          # Root component — wires Navigation, page, Footer
-├── index.js                        # React DOM entry point
+├── App.js                          # Root — dispatches getUser on mount, renders Routes
+├── index.js                        # Entry point — <Provider> + <BrowserRouter>
+├── config/
+│   └── api.js                      # Axios instance; JWT attached via interceptor; reads REACT_APP_API_BASE_URL
+├── Redux/
+│   ├── store.js                    # configureStore with all 6 reducers
+│   ├── Auth/
+│   │   └── authSlice.js            # register, login, getUser thunks + logout reducer
+│   └── Customers/
+│       ├── productSlice.js         # findProducts, findProductById
+│       ├── cartSlice.js            # getCart, addItemToCart, removeCartItem, updateCartItem
+│       ├── orderSlice.js           # createOrder, getOrderById, getOrderHistory
+│       ├── reviewSlice.js          # createReview/Rating, getAllReviews/Ratings
+│       └── paymentSlice.js         # createPayment (Stripe-ready), updatePayment
 ├── Data/
-│   └── mens_kurta.js               # Static product data (men's section)
+│   ├── productRegistry.js          # Merges all datasets; assigns stable IDs; exports allProducts, productsBySection, findProductById
+│   ├── mens_kurta.js               # Static product data
+│   ├── mens_shirt.json             # Static product data
+│   ├── mens_shoes.js               # Static product data (uses `image` field, not `imageUrl`)
+│   ├── womens_saree.js             # Static product data (uses `image` field, not `imageUrl`)
+│   └── womens_dress.js             # Static product data
+├── Pages/
+│   └── NotFound.jsx                # 404 page
+├── Routers/
+│   └── CustomerRoutes.jsx          # All customer-facing routes + Navigation + Footer wrapper
 └── customer/
     └── components/
         ├── Navigation/
-        │   ├── Navigation.jsx       # Full responsive nav (mobile drawer + desktop flyout)
+        │   ├── Navigation.jsx       # Responsive nav; category clicks call useNavigate
         │   └── navigationData.js    # Category / section / page link data
         ├── HomeCarosel/
-        │   ├── MainCarosel.jsx      # Hero banner carousel
-        │   └── MainCaroselData.js   # Banner slide data
+        │   ├── MainCarosel.jsx      # Hero banner carousel (Unsplash images, 500px, autoPlay)
+        │   └── MainCaroselData.js   # Banner slide data with route paths
         ├── HomeSectionCard/
-        │   └── HomeSectionCard.jsx  # Individual product card in homepage sections
+        │   └── HomeSectionCard.jsx  # Product card for homepage carousels; navigates to /product/:id
         ├── HomeSectionCarosel/
-        │   └── HomeSectionCarosel.jsx # Horizontal scroll carousel for a product section
+        │   └── HomeSectionCarosel.jsx  # Horizontal section carousel; arrows use AliceCarousel ref API
         ├── pages/
         │   └── HomePage/
-        │       └── HomePage.jsx     # Home page (currently commented out in App.js)
+        │       └── HomePage.jsx     # Home page — hero carousel + 5 product section carousels
         ├── Product/
-        │   ├── Product.jsx          # Product listing page with sidebar filters
-        │   ├── ProductCard.jsx      # Single product card
-        │   ├── FilterData.jsx       # Filter sidebar data/config
-        │   └── ProductCard.css      # Card-specific styles
+        │   ├── Product.jsx          # Product listing page with sidebar filters (uses allProducts from registry)
+        │   ├── ProductCard.jsx      # Clickable product card; navigates to /product/:id; prices in €
+        │   ├── ProductDetails.jsx   # Full product detail page — image, price, sizes, qty, Add to Cart
+        │   ├── FilterData.jsx       # Filter sidebar config
+        │   └── ProductCard.css      # Card hover styles
         └── Footer/
             └── Footer.jsx           # Site footer
 ```
 
 ---
 
+## Routing
+
+| Path | Component | Notes |
+|---|---|---|
+| `/` | `HomePage` | Hero carousel + section carousels |
+| `/home` | `HomePage` | Alias |
+| `/:l1/:l2/:l3` | `Product` | Category product listing with filters |
+| `/product/:productId` | `ProductDetails` | Full detail page; ID from productRegistry |
+| `*` | `NotFound` | 404 |
+| `/admin/*` | _(pending)_ | Admin panel — blocked on auth |
+
+---
+
+## Redux Store Shape
+
+```js
+store = {
+  auth:    { user, isLoading, error }           // null user = not logged in
+  product: { products[], product, loading, error }
+  cart:    { cart, cartItems[], loading, error }
+  order:   { orders[], order, loading, error }
+  review:  { reviews[], ratings[], loading, error }
+  payment: { payment, loading, error }
+}
+```
+
+---
+
+## Data Layer
+
+All product data is currently **static** (no backend calls). The `productRegistry.js` normalises 5 datasets into a single flat array with stable prefix-based IDs:
+
+| Prefix | Dataset | Notes |
+|---|---|---|
+| `mk-N` | Men's Kurta | `imageUrl`, numeric prices |
+| `ms-N` | Men's Shirt | `imageUrl`, numeric prices |
+| `msh-N` | Men's Shoes | `image` field, string prices (₹ stripped) |
+| `ws-N` | Women's Saree | `image` field, string prices (₹ stripped) |
+| `wd-N` | Women's Dress | `imageUrl`, numeric prices |
+
+When backend is connected, replace `findProductById` calls in `ProductDetails` with the `findProductById` Redux thunk from `productSlice`.
+
+---
+
 ## Current State (as of 2026-06-02)
 
 ### What is built
-- Navigation bar — responsive with mobile drawer (Headless UI Dialog/Transition) and desktop flyout (Popover). Avatar + user menu (MUI Menu) wired up with static `true` auth guard.
-- Product listing page — active and rendered in `App.js`.
-- Footer — rendered.
-- HomePage with hero carousel + section carousels — **commented out** in `App.js` (`<HomePage />` replaced by `<Product />`).
+- **Hero carousel** — Unsplash banner images, autoPlay, dot navigation, clickable slides
+- **Homepage** — 5 product section carousels (Kurta, Shoes, Shirt, Saree, Dress) with working arrows
+- **Navigation** — responsive mobile drawer + desktop flyout; category clicks navigate to `/:l1/:l2/:l3`
+- **Product listing page** — sidebar filters (UI only, not wired to data yet), all products from registry
+- **Product detail page** — image, brand, title, EUR price + discount badge, color, size selector (required), quantity +/−, Add to Cart (dispatches Redux thunk), Back link
+- **Redux store** — 6 slices (auth, product, cart, order, review, payment); `getUser` dispatched on app mount
+- **Axios API client** — `src/config/api.js`; JWT attached on every request via interceptor
+- **Routing** — full `<Routes>` setup; `BrowserRouter` in `index.js`; `<Provider>` wraps app
+- **404 page**
 
-### What is NOT yet built / pending
-- Authentication — sign-in / sign-up modal (`setOpenAuthModal` declared but not wired; auth modal component missing).
-- Routing — `react-router-dom` installed but no `<Routes>` / `<Route>` set up yet. `handleCategoryClick` has a commented-out `navigate()` call.
-- Cart — shopping bag icon shows hardcoded `2`; no cart state or page.
-- Product detail page.
-- Checkout flow.
-- Backend integration — all data is static (`mens_kurta.js`, navigation data).
-- State management — no Redux / Zustand / Context yet.
+### What is NOT yet built
+- **Auth modal** — sign-in / sign-up UI; `auth.user` is always null until built
+- **Cart page** — `/cart` route exists as comment; `cartSlice` is ready
+- **Checkout flow** — `/checkout` route exists as comment
+- **Orders pages** — `/account/order` and `/account/order/:orderId` exist as comments
+- **Payment** — Stripe integration; backend `PaymentController` needs to be updated from Razorpay
+- **Admin panel** — route exists as comment in `App.js`; blocked on auth
+- **Backend connection** — all product data is static; Redux thunks will work once `REACT_APP_API_BASE_URL` points to a running backend
+- **Product filter wiring** — filter UI exists but doesn't filter the product list yet
 
 ---
 
 ## Development Commands
 
 ```powershell
-npm start       # Start dev server at http://localhost:3000
-npm test        # Run test suite (Jest + React Testing Library)
+npm start       # Dev server at http://localhost:3000
 npm run build   # Production build to /build
+npm test        # Jest + React Testing Library
 ```
 
----
+## Environment Variables
 
-## Known Issues / Notes
+| Variable | Default | Purpose |
+|---|---|---|
+| `REACT_APP_API_BASE_URL` | `http://localhost:5454` | Spring Boot backend URL |
 
-- `Navigation.jsx:21` — `setOpenAuthModal` is declared but never used (triggers lint warning). Auth modal not implemented yet.
-- `Navigation.jsx:152` — `{"item.name"}` is a string literal bug (should be `{item.name}`) in the mobile menu section items.
-- `App.js:13` — `<HomePage />` is commented out; the product page is rendered directly without routing.
-- No React Router `<BrowserRouter>` wrapper exists yet — must be added before any `<Link>` or `navigate()` usage.
+Create `.env.local` to override locally (already git-ignored).
 
 ---
 
 ## Workflow Guidelines for Claude
 
-1. **Before editing a component**, read its current file to avoid clobbering in-progress work.
-2. **Routing setup** is a prerequisite before adding any new pages or navigation links.
-3. **Auth modal** should be a separate component in `src/customer/components/Auth/` when built.
-4. **State management** — decide on Redux Toolkit vs Zustand before building cart/auth state; don't wire both.
-5. **Styling convention** — use Tailwind utility classes for layout/spacing; MUI components for interactive elements (buttons, inputs, menus). Don't mix MUI `sx` prop and Tailwind on the same element.
-6. **Data layer** — static data files in `src/Data/`. Future API calls should live in a `src/api/` or `src/services/` directory.
+1. **Always read a file before editing it** — avoid clobbering in-progress work.
+2. **Styling convention** — Tailwind for layout/spacing; MUI for interactive elements. Don't mix MUI `sx` and Tailwind on the same element.
+3. **Product data** — use `productRegistry.js` as the single source. Don't import raw data files directly in components.
+4. **Redux thunks** — all API calls go through slices in `src/Redux/`. Don't call `api.js` directly from components.
+5. **Auth guard** — check `store.auth.user` for logged-in state. The Navigation already has a `true` hardcoded — replace with `Boolean(auth.user)` when auth modal is built.
+6. **New pages** — add the route in `CustomerRoutes.jsx` and uncomment the matching comment block.
+7. **Currency** — display all prices in **€** (EUR). The data prices are numbers (INR values used as placeholder amounts).
 
 ---
 
@@ -120,4 +195,9 @@ npm run build   # Production build to /build
 | Date | What was done |
 |---|---|
 | 2026-06-02 | Project scaffolded; Navigation, Product, Footer, HomePage, Carousel components built. CLAUDE.md created. |
-| 2026-06-02 | Backend repo created at D:\JAMK\application-framework\ecommerce-backend, pushed to github.com/SharifMasum/ecommerce-backend. Secrets stripped from application.properties; Razorpay placeholders replaced with Stripe env vars. |
+| 2026-06-02 | Backend repo created at ecommerce-backend; secrets stripped; Razorpay → Stripe placeholders. |
+| 2026-06-02 | Set up React Router v6: CustomerRoutes, NotFound page, category nav wired to useNavigate. |
+| 2026-06-02 | Fixed homepage carousels: arrows use AliceCarousel ref API; each section uses correct dataset. |
+| 2026-06-02 | Fixed hero carousel: replaced hotlink-blocked images with Unsplash CDN; removed -z-10. |
+| 2026-06-02 | Added Redux Toolkit store with 6 slices; Axios instance with JWT interceptor; Provider in index.js. |
+| 2026-06-02 | Implemented product detail page; productRegistry normalises all datasets with stable IDs; both card types navigate to /product/:id. |
