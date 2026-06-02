@@ -3,6 +3,7 @@ import Navigation from "../customer/components/Navigation/Navigation";
 import Footer from "../customer/components/Footer/Footer";
 import HomePage from "../customer/components/pages/HomePage/HomePage";
 import Product from "../customer/components/Product/Product";
+import ProductDetails from "../customer/components/Product/ProductDetails";
 import NotFound from "../Pages/NotFound";
 
 const CustomerRoutes = () => {
@@ -16,8 +17,7 @@ const CustomerRoutes = () => {
         {/* Product listing: /:category/:section/:item  e.g. /men/clothing/kurtas */}
         <Route path="/:levelOne/:levelTwo/:levelThree" element={<Product />} />
 
-        {/* Routes added as components are built: */}
-        {/* <Route path="/product/:productId" element={<ProductDetails />} /> */}
+        <Route path="/product/:productId" element={<ProductDetails />} />
         {/* <Route path="/cart" element={<Cart />} /> */}
         {/* <Route path="/checkout" element={<Checkout />} /> */}
         {/* <Route path="/account/order" element={<Order />} /> */}

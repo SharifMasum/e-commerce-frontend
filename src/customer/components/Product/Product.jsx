@@ -4,7 +4,7 @@ import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
 import ProductCard from './ProductCard'
-import {mens_kurta} from '../../../Data/mens_kurta'
+import { allProducts } from '../../../Data/productRegistry'
 import {singleFilter, filters} from './FilterData'
 import { FormControl, RadioGroup, Radio, FormControlLabel } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -321,7 +321,7 @@ export default function Product() {
               {/* Product grid */}
               <div className="lg:col-span-4 w-full">
                 <div className='flex flex-wrap justify-center bg-white py-5'>
-                    {mens_kurta.map((item)=><ProductCard product={item}/>)}
+                    {allProducts.map((item) => <ProductCard key={item.id} product={item} />)}
                 </div>
                 </div>
             </div>
