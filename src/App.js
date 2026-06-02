@@ -1,22 +1,13 @@
-
-import './App.css';
-import Navigation from './customer/components/Navigation/Navigation';
-import HomePage from './customer/components/pages/HomePage/HomePage';
-import Footer from './customer/components/Footer/Footer';
-import Product from './customer/components/Product/Product';
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import CustomerRoutes from "./Routers/CustomerRoutes";
 
 function App() {
   return (
-    <div className="">
-      <Navigation />
-      <div>
-        {/* <HomePage /> */}
-        <Product />
-      </div>
-      <div>
-        <Footer />
-      </div>
-    </div>
+    <Routes>
+      <Route path="/*" element={<CustomerRoutes />} />
+      {/* Admin route added here once auth + admin panel are built */}
+    </Routes>
   );
 }
 

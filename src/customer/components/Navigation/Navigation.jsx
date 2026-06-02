@@ -1,4 +1,5 @@
 import { Fragment, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, Popover, Tab, Transition } from "@headlessui/react";
 import { navigation } from "./navigationData";
 import {
@@ -18,9 +19,9 @@ function classNames(...classes) {
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
-  const [setOpenAuthModal] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
+  const navigate = useNavigate();
   
   const handleUserClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -29,12 +30,8 @@ export default function Navigation() {
     setAnchorEl(null);
   };
 
-  const handleOpen = () => {
-    setOpenAuthModal(true);
-  };
-
   const handleCategoryClick = (category, section, item, close) => {
-    // navigate(`/${category.id}/${section.id}/${item.id}`);
+    navigate(`/${category.id}/${section.id}/${item.id}`);
     close();
   };
 
@@ -398,7 +395,6 @@ export default function Navigation() {
                     </div>
                   ) : (
                     <Button
-                      onClick={handleOpen}
                       className="text-sm font-medium text-gray-700 hover:text-gray-800"
                     >
                       Signin
