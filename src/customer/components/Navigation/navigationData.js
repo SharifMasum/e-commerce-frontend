@@ -22,8 +22,8 @@ export const navigation = {
             id: 'clothing',
             name: 'Clothing',
             items: [
-              { name: 'Tops', id:"top", href: `{women/clothing/tops}` },
-              { name: 'Dresses', id:"women_dress", href: '#' },
+              { name: 'Tops', id: 'top' },
+              { name: 'Dresses', id: 'women_dress' },
               { name: 'Women Jeans', id: 'women_jeans' },
               { name: 'Lengha Choli', id: 'lengha_choli' },
               { name: 'Sweaters', id: 'sweater' },
@@ -89,13 +89,13 @@ export const navigation = {
               { name: 'T-Shirts', id: 't-shirt' },
               { name: 'Jackets', id: '#' },
               { name: 'Activewear', id: '#' },
-              
             ],
           },
           {
             id: 'accessories',
             name: 'Accessories',
             items: [
+              { name: 'Shoes', id: 'men_shoes' },
               { name: 'Watches', id: '#' },
               { name: 'Wallets', id: '#' },
               { name: 'Bags', id: '#' },

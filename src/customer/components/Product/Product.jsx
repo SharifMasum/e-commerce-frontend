@@ -5,9 +5,10 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
 import ProductCard from './ProductCard'
 import { allProducts } from '../../../Data/productRegistry'
+import { navigation } from '../Navigation/navigationData'
 import {singleFilter, filters} from './FilterData'
 import { FormControl, RadioGroup, Radio, FormControlLabel } from '@mui/material'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 const sortOptions = [
   { name: 'Price: Low to High', href: '#', current: false },
@@ -22,6 +23,22 @@ export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const location = useLocation();
   const navigate = useNavigate();
+  const { levelThree } = useParams();
+
+  const getCategoryName = () => {
+    for (const category of navigation.categories) {
+      for (const section of category.sections) {
+        const item = section.items.find((i) => i.id === levelThree);
+        if (item) return item.name;
+      }
+    }
+    return levelThree?.replace(/_/g, ' ') || 'Products';
+  };
+
+  const categoryName = getCategoryName();
+  const filteredProducts = allProducts.filter(
+    (p) => p.thirdLavelCategory === levelThree
+  );
 
   const handleFilter = (value, sectionId) => {
     const searchParams = new URLSearchParams(location.search);
@@ -153,7 +170,7 @@ export default function Product() {
 
         <main className="mx-auto px-4 sm:px-6 lg:px-20">
           <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">New Arrivals</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">{categoryName}</h1>
 
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
@@ -320,10 +337,17 @@ export default function Product() {
 
               {/* Product grid */}
               <div className="lg:col-span-4 w-full">
-                <div className='flex flex-wrap justify-center bg-white py-5'>
-                    {allProducts.map((item) => <ProductCard key={item.id} product={item} />)}
-                </div>
-                </div>
+                {filteredProducts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-24 text-gray-400">
+                    <p className="text-xl font-medium">No products found in &ldquo;{categoryName}&rdquo;</p>
+                    <p className="mt-2 text-sm">Check back later or browse another category.</p>
+                  </div>
+                ) : (
+                  <div className='flex flex-wrap justify-center bg-white py-5'>
+                    {filteredProducts.map((item) => <ProductCard key={item.id} product={item} />)}
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         </main>

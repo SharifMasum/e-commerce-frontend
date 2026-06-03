@@ -31,6 +31,7 @@ export default function Navigation() {
   };
 
   const handleCategoryClick = (category, section, item, close) => {
+    if (item.id === '#') return;
     navigate(`/${category.id}/${section.id}/${item.id}`);
     close();
   };

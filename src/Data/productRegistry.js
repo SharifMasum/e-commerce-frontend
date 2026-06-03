@@ -10,7 +10,7 @@ const parsePrice = (val) => {
   return 0;
 };
 
-const normalize = (item, index, prefix) => ({
+const normalize = (item, index, prefix, category) => ({
   id: `${prefix}-${index}`,
   imageUrl: item.imageUrl || item.image || "",
   brand: item.brand || item.title || "",
@@ -24,15 +24,15 @@ const normalize = (item, index, prefix) => ({
   description: item.description || "",
   topLavelCategory: item.topLavelCategory || "",
   secondLavelCategory: item.secondLavelCategory || "",
-  thirdLavelCategory: item.thirdLavelCategory || "",
+  thirdLavelCategory: category,
 });
 
 export const allProducts = [
-  ...mens_kurta.map((p, i) => normalize(p, i, "mk")),
-  ...mensShirt.map((p, i) => normalize(p, i, "ms")),
-  ...mensShoesPage1.map((p, i) => normalize(p, i, "msh")),
-  ...sareePage1.map((p, i) => normalize(p, i, "ws")),
-  ...dressPage1.map((p, i) => normalize(p, i, "wd")),
+  ...mens_kurta.map((p, i) => normalize(p, i, "mk", "mens_kurta")),
+  ...mensShirt.map((p, i) => normalize(p, i, "ms", "shirt")),
+  ...mensShoesPage1.map((p, i) => normalize(p, i, "msh", "men_shoes")),
+  ...sareePage1.map((p, i) => normalize(p, i, "ws", "saree")),
+  ...dressPage1.map((p, i) => normalize(p, i, "wd", "women_dress")),
 ];
 
 export const productsBySection = {
