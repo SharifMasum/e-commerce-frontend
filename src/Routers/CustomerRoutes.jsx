@@ -4,6 +4,8 @@ import Footer from "../customer/components/Footer/Footer";
 import HomePage from "../customer/components/pages/HomePage/HomePage";
 import Product from "../customer/components/Product/Product";
 import ProductDetails from "../customer/components/Product/ProductDetails";
+import CompanyPage from "../customer/components/pages/CompanyPage/CompanyPage";
+import StoresPage from "../customer/components/pages/StoresPage/StoresPage";
 import NotFound from "../Pages/NotFound";
 
 const CustomerRoutes = () => {
@@ -18,6 +20,8 @@ const CustomerRoutes = () => {
         <Route path="/:levelOne/:levelTwo/:levelThree" element={<Product />} />
 
         <Route path="/product/:productId" element={<ProductDetails />} />
+        <Route path="/company" element={<CompanyPage />} />
+        <Route path="/stores" element={<StoresPage />} />
         {/* <Route path="/cart" element={<Cart />} /> */}
         {/* <Route path="/checkout" element={<Checkout />} /> */}
         {/* <Route path="/account/order" element={<Order />} /> */}
