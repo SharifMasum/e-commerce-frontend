@@ -23,22 +23,41 @@ export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const location = useLocation();
   const navigate = useNavigate();
-  const { levelThree } = useParams();
+  const { gender, category } = useParams();
+
+  // Maps URL slug → thirdLavelCategory value in productRegistry
+  const SLUG_TO_CATEGORY = {
+    'men:kurtas':   'mens_kurta',
+    'men:shirts':   'shirt',
+    'men:shoes':    'men_shoes',
+    'women:sarees': 'saree',
+    'women:dresses':'women_dress',
+  };
+
+  const categoryKey = gender && category ? `${gender}:${category}` : null;
+  const thirdLevel  = categoryKey ? SLUG_TO_CATEGORY[categoryKey] : undefined;
+  const hasMapping  = categoryKey ? (categoryKey in SLUG_TO_CATEGORY) : true;
 
   const getCategoryName = () => {
-    for (const category of navigation.categories) {
-      for (const section of category.sections) {
-        const item = section.items.find((i) => i.id === levelThree);
+    if (!category) {
+      return gender === 'men' ? "Men's Collection" : "Women's Collection";
+    }
+    for (const cat of navigation.categories) {
+      for (const section of cat.sections) {
+        const item = section.items.find((i) => i.href.endsWith('/' + category));
         if (item) return item.name;
       }
     }
-    return levelThree?.replace(/_/g, ' ') || 'Products';
+    return category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
   const categoryName = getCategoryName();
-  const filteredProducts = allProducts.filter(
-    (p) => p.thirdLavelCategory === levelThree
-  );
+  const filteredProducts = allProducts.filter((p) => {
+    if (!hasMapping) return false;
+    if (gender && p.gender !== gender) return false;
+    if (thirdLevel !== undefined && p.thirdLavelCategory !== thirdLevel) return false;
+    return true;
+  });
 
   const handleFilter = (value, sectionId) => {
     const searchParams = new URLSearchParams(location.search);

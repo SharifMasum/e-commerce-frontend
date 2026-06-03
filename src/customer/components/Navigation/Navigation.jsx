@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Dialog, Popover, Tab, Transition } from "@headlessui/react";
 import { navigation } from "./navigationData";
 import {
@@ -8,39 +8,26 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-
 import { Avatar, Button, Menu, MenuItem } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
-
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function Navigation() {
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
-  const navigate = useNavigate();
-  
-  const handleUserClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleCloseUserMenu = (event) => {
-    setAnchorEl(null);
-  };
 
-  const handleCategoryClick = (category, section, item, close) => {
-    if (item.id === '#') return;
-    navigate(`/${category.id}/${section.id}/${item.id}`);
-    close();
-  };
+  const handleUserClick = (event) => setAnchorEl(event.currentTarget);
+  const handleCloseUserMenu = () => setAnchorEl(null);
 
   return (
     <div className="bg-white pb-10">
       {/* Mobile menu */}
-      <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
+      <Transition.Root show={mobileOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-40 lg:hidden" onClose={setMobileOpen}>
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -52,6 +39,7 @@ export default function Navigation() {
           >
             <div className="fixed inset-0 bg-black bg-opacity-25" />
           </Transition.Child>
+
           <div className="fixed inset-0 z-40 flex">
             <Transition.Child
               as={Fragment}
@@ -67,14 +55,14 @@ export default function Navigation() {
                   <button
                     type="button"
                     className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
-                    onClick={() => setOpen(false)}
+                    onClick={() => setMobileOpen(false)}
                   >
                     <span className="sr-only">Close menu</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
 
-                {/* Links */}
+                {/* Category tabs */}
                 <Tab.Group as="div" className="mt-2">
                   <div className="border-b border-gray-200">
                     <Tab.List className="-mb-px flex space-x-8 px-4">
@@ -86,7 +74,7 @@ export default function Navigation() {
                               selected
                                 ? "border-indigo-600 text-indigo-600"
                                 : "border-transparent text-gray-900",
-                              "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium border-none"
+                              "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium"
                             )
                           }
                         >
@@ -95,18 +83,23 @@ export default function Navigation() {
                       ))}
                     </Tab.List>
                   </div>
+
                   <Tab.Panels as={Fragment}>
                     {navigation.categories.map((category) => (
-                      <Tab.Panel
-                        key={category.name}
-                        className="space-y-10 px-4 pb-8 pt-10"
-                      >
+                      <Tab.Panel key={category.name} className="space-y-10 px-4 pb-8 pt-10">
+                        {/* Shop all link */}
+                        <Link
+                          to={category.href}
+                          onClick={() => setMobileOpen(false)}
+                          className="block text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+                        >
+                          Shop all {category.name}&rsquo;s &rarr;
+                        </Link>
+
+                        {/* Featured images */}
                         <div className="grid grid-cols-2 gap-x-4">
                           {category.featured.map((item) => (
-                            <div
-                              key={item.name}
-                              className="group relative text-sm"
-                            >
+                            <div key={item.name} className="group relative text-sm">
                               <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75">
                                 <img
                                   src={item.imageSrc}
@@ -114,22 +107,20 @@ export default function Navigation() {
                                   className="object-cover object-center"
                                 />
                               </div>
-                              <a
-                                href={item.href}
-                                className="mt-6 block font-medium text-gray-900"
+                              <Link
+                                to={item.href}
+                                onClick={() => setMobileOpen(false)}
+                                className="mt-6 block font-medium text-gray-900 hover:text-gray-700"
                               >
-                                <span
-                                  className="absolute inset-0 z-10"
-                                  aria-hidden="true"
-                                />
+                                <span className="absolute inset-0 z-10" aria-hidden="true" />
                                 {item.name}
-                              </a>
-                              <p aria-hidden="true" className="mt-1">
-                                Shop now
-                              </p>
+                              </Link>
+                              <p aria-hidden="true" className="mt-1">Shop now</p>
                             </div>
                           ))}
                         </div>
+
+                        {/* Sections */}
                         {category.sections.map((section) => (
                           <div key={section.name}>
                             <p
@@ -138,7 +129,6 @@ export default function Navigation() {
                             >
                               {section.name}
                             </p>
-                            {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
                             <ul
                               role="list"
                               aria-labelledby={`${category.id}-${section.id}-heading-mobile`}
@@ -146,9 +136,13 @@ export default function Navigation() {
                             >
                               {section.items.map((item) => (
                                 <li key={item.name} className="flow-root">
-                                  <p className="-m-2 block p-2 text-gray-500">
-                                    {"item.name"}
-                                  </p>
+                                  <Link
+                                    to={item.href}
+                                    onClick={() => setMobileOpen(false)}
+                                    className="-m-2 block p-2 text-gray-500 hover:text-gray-800"
+                                  >
+                                    {item.name}
+                                  </Link>
                                 </li>
                               ))}
                             </ul>
@@ -158,41 +152,45 @@ export default function Navigation() {
                     ))}
                   </Tab.Panels>
                 </Tab.Group>
+
+                {/* Pages */}
                 <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                   {navigation.pages.map((page) => (
                     <div key={page.name} className="flow-root">
-                      <a
-                        href={page.href}
+                      <Link
+                        to={page.href}
+                        onClick={() => setMobileOpen(false)}
                         className="-m-2 block p-2 font-medium text-gray-900"
                       >
                         {page.name}
-                      </a>
+                      </Link>
                     </div>
                   ))}
                 </div>
+
                 <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                   <div className="flow-root">
-                    <a
-                      href="/"
+                    <Link
+                      to="/signin"
+                      onClick={() => setMobileOpen(false)}
                       className="-m-2 block p-2 font-medium text-gray-900"
                     >
                       Sign in
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-200 px-4 py-6">
-                  <a href="/" className="-m-2 flex items-center p-2">
+                  <span className="-m-2 flex items-center p-2">
                     <img
-                      src="https://tailwindui.com/img/flags/flag-canada.svg"
-                      alt=""
+                      src="https://tailwindui.com/img/flags/flag-finland.svg"
+                      alt="Finland"
                       className="block h-auto w-5 flex-shrink-0"
+                      onError={(e) => { e.target.style.display = 'none'; }}
                     />
-                    <span className="ml-3 block text-base font-medium text-gray-900">
-                      CAD
-                    </span>
+                    <span className="ml-3 block text-base font-medium text-gray-900">EUR</span>
                     <span className="sr-only">, change currency</span>
-                  </a>
+                  </span>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -202,20 +200,22 @@ export default function Navigation() {
 
       <header className="relative bg-white">
         <p className="flex h-10 items-center justify-center bg-indigo-600 px-4 text-sm font-medium text-white sm:px-6 lg:px-8">
-          Get free delivery on orders over $100
+          Get free delivery on orders over €100
         </p>
 
         <nav aria-label="Top" className="mx-auto">
           <div className="border-b border-gray-200">
             <div className="flex h-16 items-center px-11">
+              {/* Mobile menu button */}
               <button
                 type="button"
                 className="rounded-md bg-white p-2 text-gray-400 lg:hidden"
-                onClick={() => setOpen(true)}
+                onClick={() => setMobileOpen(true)}
               >
                 <span className="sr-only">Open menu</span>
                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
               </button>
+
               {/* Logo */}
               <Link
                 to="/"
@@ -228,20 +228,21 @@ export default function Navigation() {
                   className="h-8 w-8 mr-2"
                 />
               </Link>
-              {/* Flyout menus */}
+
+              {/* Desktop flyout menus */}
               <Popover.Group className="hidden lg:ml-8 lg:block lg:self-stretch z-10">
                 <div className="flex h-full space-x-8">
                   {navigation.categories.map((category) => (
                     <Popover key={category.name} className="flex">
-                      {({ open, close }) => (
+                      {({ open: panelOpen, close }) => (
                         <>
                           <div className="relative flex">
                             <Popover.Button
                               className={classNames(
-                                open
+                                panelOpen
                                   ? "border-indigo-600 text-indigo-600"
                                   : "border-transparent text-gray-700 hover:text-gray-800",
-                                "relative z-10 -mb-px flex items-center border-b-2 pt-px text-sm font-medium transition-colors duration-200 ease-out"
+                                "relative z-10 -mb-px flex items-center border-b-2 pt-px text-sm font-medium transition-colors duration-200 ease-out focus:outline-none"
                               )}
                             >
                               {category.name}
@@ -258,15 +259,25 @@ export default function Navigation() {
                             leaveTo="opacity-0"
                           >
                             <Popover.Panel className="absolute inset-x-0 top-full text-sm text-gray-500">
-                              {/* Presentational element used to render the bottom shadow, if we put the shadow on the actual panel it pokes out the top, so we use this shorter element to hide the top of the shadow */}
                               <div
                                 className="absolute inset-0 top-1/2 bg-white shadow"
                                 aria-hidden="true"
                               />
-
                               <div className="relative bg-white">
                                 <div className="mx-auto max-w-7xl px-8">
+                                  {/* Shop all link */}
+                                  <div className="flex justify-end border-b border-gray-100 py-3">
+                                    <Link
+                                      to={category.href}
+                                      onClick={close}
+                                      className="text-sm font-semibold text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline"
+                                    >
+                                      Shop all {category.name}&rsquo;s &rarr;
+                                    </Link>
+                                  </div>
+
                                   <div className="grid grid-cols-2 gap-x-8 gap-y-10 py-16">
+                                    {/* Featured images */}
                                     <div className="col-start-2 grid grid-cols-2 gap-x-8">
                                       {category.featured.map((item) => (
                                         <div
@@ -280,25 +291,25 @@ export default function Navigation() {
                                               className="object-cover object-center"
                                             />
                                           </div>
-                                          <a
-                                            href={item.href}
-                                            className="mt-6 block font-medium text-gray-900"
+                                          <Link
+                                            to={item.href}
+                                            onClick={close}
+                                            className="mt-6 block font-medium text-gray-900 hover:text-gray-700 focus:outline-none focus:underline"
                                           >
                                             <span
                                               className="absolute inset-0 z-10"
                                               aria-hidden="true"
                                             />
                                             {item.name}
-                                          </a>
-                                          <p
-                                            aria-hidden="true"
-                                            className="mt-1"
-                                          >
+                                          </Link>
+                                          <p aria-hidden="true" className="mt-1">
                                             Shop now
                                           </p>
                                         </div>
                                       ))}
                                     </div>
+
+                                    {/* Section links */}
                                     <div className="row-start-1 grid grid-cols-3 gap-x-8 gap-y-10 text-sm">
                                       {category.sections.map((section) => (
                                         <div key={section.name}>
@@ -308,30 +319,20 @@ export default function Navigation() {
                                           >
                                             {section.name}
                                           </p>
-                                          {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
                                           <ul
                                             role="list"
                                             aria-labelledby={`${section.name}-heading`}
                                             className="mt-6 space-y-6 sm:mt-4 sm:space-y-4"
                                           >
                                             {section.items.map((item) => (
-                                              <li
-                                                key={item.name}
-                                                className="flex"
-                                              >
-                                                <p
-                                                  onClick={() =>
-                                                    handleCategoryClick(
-                                                      category,
-                                                      section,
-                                                      item,
-                                                      close
-                                                    )
-                                                  }
-                                                  className="cursor-pointer hover:text-gray-800"
+                                              <li key={item.name} className="flex">
+                                                <Link
+                                                  to={item.href}
+                                                  onClick={close}
+                                                  className="hover:text-gray-800 focus:outline-none focus:underline"
                                                 >
                                                   {item.name}
-                                                </p>
+                                                </Link>
                                               </li>
                                             ))}
                                           </ul>
@@ -348,11 +349,12 @@ export default function Navigation() {
                     </Popover>
                   ))}
 
+                  {/* Company / Stores links */}
                   {navigation.pages.map((page) => (
                     <Link
                       key={page.name}
                       to={page.href}
-                      className="-mb-px flex items-center border-b-2 border-transparent pt-px text-sm font-medium text-gray-700 transition-colors duration-200 ease-out hover:border-gray-300 hover:text-gray-800"
+                      className="-mb-px flex items-center border-b-2 border-transparent pt-px text-sm font-medium text-gray-700 transition-colors duration-200 ease-out hover:border-gray-300 hover:text-gray-800 focus:outline-none focus:border-indigo-600 focus:text-indigo-600"
                     >
                       {page.name}
                     </Link>
@@ -360,22 +362,17 @@ export default function Navigation() {
                 </div>
               </Popover.Group>
 
+              {/* Right-side controls */}
               <div className="ml-auto flex items-center">
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                   {true ? (
+                  {true ? (
                     <div>
                       <Avatar
-                        className="text-white"
                         onClick={handleUserClick}
-                        aria-controls={open ? "basic-menu" : undefined}
+                        aria-controls={openUserMenu ? "basic-menu" : undefined}
                         aria-haspopup="true"
-                        aria-expanded={open ? "true" : undefined}
-                        // onClick={handleUserClick}
-                        sx={{
-                          bgcolor: deepPurple[500],
-                          color: "white",
-                          cursor: "pointer",
-                        }}
+                        aria-expanded={openUserMenu ? "true" : undefined}
+                        sx={{ bgcolor: deepPurple[500], color: "white", cursor: "pointer" }}
                       >
                         R
                       </Avatar>
@@ -384,51 +381,37 @@ export default function Navigation() {
                         anchorEl={anchorEl}
                         open={openUserMenu}
                         onClose={handleCloseUserMenu}
-                        MenuListProps={{
-                          "aria-labelledby": "basic-button",
-                        }}
+                        MenuListProps={{ "aria-labelledby": "basic-button" }}
                       >
-                        <MenuItem>
-                          Profile
-                        </MenuItem>
-                        <MenuItem>
-                          My Order
-                        </MenuItem>
+                        <MenuItem>Profile</MenuItem>
+                        <MenuItem>My Order</MenuItem>
                         <MenuItem>Logout</MenuItem>
                       </Menu>
                     </div>
                   ) : (
-                    <Button
-                      className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                    >
-                      Signin
+                    <Button className="text-sm font-medium text-gray-700 hover:text-gray-800">
+                      Sign in
                     </Button>
                   )}
                 </div>
 
                 {/* Search */}
                 <div className="flex lg:ml-6">
-                  <p className="p-2 text-gray-400 hover:text-gray-500">
+                  <button className="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md">
                     <span className="sr-only">Search</span>
-                    <MagnifyingGlassIcon
-                      className="h-6 w-6"
-                      aria-hidden="true"
-                    />
-                  </p>
+                    <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
                 </div>
 
                 {/* Cart */}
                 <div className="ml-4 flow-root lg:ml-6">
-                  <Button
-                   
-                    className="group -m-2 flex items-center p-2"
-                  >
+                  <Button className="group -m-2 flex items-center p-2">
                     <ShoppingBagIcon
                       className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                       aria-hidden="true"
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-                     2
+                      2
                     </span>
                     <span className="sr-only">items in cart, view bag</span>
                   </Button>
