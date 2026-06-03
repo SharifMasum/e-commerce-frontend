@@ -4,7 +4,6 @@ const stores = [
   {
     city: "Tampere",
     address: "Hämeenkatu 14, 33100 Tampere",
-    phone: "+358 3 123 4567",
     hours: {
       weekdays: "10:00 – 20:00",
       saturday: "10:00 – 18:00",
@@ -15,7 +14,6 @@ const stores = [
   {
     city: "Helsinki",
     address: "Aleksanterinkatu 28, 00100 Helsinki",
-    phone: "+358 9 876 5432",
     hours: {
       weekdays: "10:00 – 21:00",
       saturday: "10:00 – 19:00",
@@ -26,7 +24,6 @@ const stores = [
   {
     city: "Turku",
     address: "Yliopistonkatu 11, 20100 Turku",
-    phone: "+358 2 234 5678",
     hours: {
       weekdays: "10:00 – 19:00",
       saturday: "10:00 – 17:00",
@@ -37,7 +34,6 @@ const stores = [
   {
     city: "Oulu",
     address: "Kirkkokatu 4, 90100 Oulu",
-    phone: "+358 8 345 6789",
     hours: {
       weekdays: "10:00 – 19:00",
       saturday: "10:00 – 17:00",
@@ -48,7 +44,6 @@ const stores = [
   {
     city: "Lahti",
     address: "Aleksanterinkatu 16, 15110 Lahti",
-    phone: "+358 3 456 7890",
     hours: {
       weekdays: "10:00 – 18:00",
       saturday: "10:00 – 16:00",
@@ -59,7 +54,6 @@ const stores = [
   {
     city: "Vaasa",
     address: "Kauppapuistikko 21, 65100 Vaasa",
-    phone: "+358 6 567 8901",
     hours: {
       weekdays: "10:00 – 18:00",
       saturday: "10:00 – 16:00",
@@ -70,7 +64,6 @@ const stores = [
   {
     city: "Jyväskylä",
     address: "Kauppakatu 30, 40100 Jyväskylä",
-    phone: "+358 14 678 9012",
     hours: {
       weekdays: "10:00 – 19:00",
       saturday: "10:00 – 17:00",
@@ -132,7 +125,6 @@ const StoresPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <PhoneIcon className="h-4 w-4 flex-shrink-0 text-gray-400" />
-                  <p>{store.phone}</p>
                 </div>
               </div>
             </div>

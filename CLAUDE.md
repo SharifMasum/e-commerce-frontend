@@ -148,7 +148,7 @@ When backend is connected, replace `findProductById` calls in `ProductDetails` w
 - **Category product listing page** — reads `levelThree` from URL params; filters `allProducts` by `thirdLavelCategory`; shows category name as heading; shows empty state when no products match; sidebar filter UI present but not wired to data yet
 - **Product detail page** — image, brand, title, EUR price + discount badge, color, size selector (required), quantity +/−, Add to Cart (dispatches Redux thunk), Back link
 - **Company page** (`/company`) — hero, stats bar, Vision, Values grid, Careers listings, Contact; edit data arrays at top of file
-- **Stores page** (`/stores`) — 7 Finnish city cards (Tampere, Helsinki, Turku, Oulu, Lahti, Vaasa, Jyväskylä) each with address, hours, note; phone field present in data but hidden in current render; edit `stores` array at top of file
+- **Stores page** (`/stores`) — 7 Finnish city cards (Tampere, Helsinki, Turku, Oulu, Lahti, Vaasa, Jyväskylä) each with address, hours, note; phone numbers removed from data; edit `stores` array at top of file
 - **Redux store** — 6 slices (auth, product, cart, order, review, payment); `getUser` dispatched on app mount
 - **Axios API client** — `src/config/api.js`; JWT attached on every request via interceptor
 - **Routing** — full `<Routes>` setup; `BrowserRouter` in `index.js`; `<Provider>` wraps app
