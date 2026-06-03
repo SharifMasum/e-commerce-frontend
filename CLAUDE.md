@@ -97,8 +97,10 @@ src/
 |---|---|---|
 | `/` | `HomePage` | Hero carousel + section carousels |
 | `/home` | `HomePage` | Alias |
-| `/:l1/:l2/:l3` | `Product` | Category product listing with filters |
+| `/:l1/:l2/:l3` | `Product` | Category product listing; filters by `levelThree` |
 | `/product/:productId` | `ProductDetails` | Full detail page; ID from productRegistry |
+| `/company` | `CompanyPage` | About, Vision, Values, Careers, Contact |
+| `/stores` | `StoresPage` | 7 Finnish store locations |
 | `*` | `NotFound` | 404 |
 | `/admin/*` | _(pending)_ | Admin panel — blocked on auth |
 
@@ -142,9 +144,11 @@ When backend is connected, replace `findProductById` calls in `ProductDetails` w
 ### What is built
 - **Hero carousel** — Unsplash banner images, autoPlay, dot navigation, clickable slides
 - **Homepage** — 5 product section carousels (Kurta, Shoes, Shirt, Saree, Dress) with working arrows
-- **Navigation** — responsive mobile drawer + desktop flyout; category clicks navigate to `/:l1/:l2/:l3`; placeholder items (`id: '#'`) are visible but do not navigate
+- **Navigation** — responsive mobile drawer + desktop flyout; logo links to `/` via React Router `Link`; category clicks navigate to `/:l1/:l2/:l3`; placeholder items (`id: '#'`) are visible but do not navigate; Company/Stores use `Link` with bottom-border hover effect
 - **Category product listing page** — reads `levelThree` from URL params; filters `allProducts` by `thirdLavelCategory`; shows category name as heading; shows empty state when no products match; sidebar filter UI present but not wired to data yet
 - **Product detail page** — image, brand, title, EUR price + discount badge, color, size selector (required), quantity +/−, Add to Cart (dispatches Redux thunk), Back link
+- **Company page** (`/company`) — hero, stats bar, Vision, Values grid, Careers listings, Contact; edit data arrays at top of file
+- **Stores page** (`/stores`) — 7 Finnish city cards (Tampere, Helsinki, Turku, Oulu, Lahti, Vaasa, Jyväskylä) each with address, hours, note; phone field present in data but hidden in current render; edit `stores` array at top of file
 - **Redux store** — 6 slices (auth, product, cart, order, review, payment); `getUser` dispatched on app mount
 - **Axios API client** — `src/config/api.js`; JWT attached on every request via interceptor
 - **Routing** — full `<Routes>` setup; `BrowserRouter` in `index.js`; `<Provider>` wraps app
@@ -204,3 +208,4 @@ Create `.env.local` to override locally (already git-ignored).
 | 2026-06-02 | Added Redux Toolkit store with 6 slices; Axios instance with JWT interceptor; Provider in index.js. |
 | 2026-06-02 | Implemented product detail page; productRegistry normalises all datasets with stable IDs; both card types navigate to /product/:id. |
 | 2026-06-03 | Fixed mega menu category navigation: Product.jsx now filters by levelThree URL param; productRegistry passes explicit thirdLavelCategory per dataset; navigationData cleaned up (no broken hrefs, Shoes added to Men accessories); Navigation guards against id '#' clicks. |
+| 2026-06-03 | Made navbar logo a React Router Link to /. Fixed Company/Stores nav links (were broken — no href, id-based). Added CompanyPage (/company) and StoresPage (/stores) with Finnish content. |
