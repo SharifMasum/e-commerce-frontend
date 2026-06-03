@@ -54,7 +54,7 @@ src/
 │       ├── reviewSlice.js          # createReview/Rating, getAllReviews/Ratings
 │       └── paymentSlice.js         # createPayment (Stripe-ready), updatePayment
 ├── Data/
-│   ├── productRegistry.js          # Merges all datasets; assigns stable IDs; exports allProducts, productsBySection, findProductById
+│   ├── productRegistry.js          # Merges all datasets; stable IDs; gender field; exports allProducts, productsBySection, findProductById
 │   ├── mens_kurta.js               # Static product data
 │   ├── mens_shirt.json             # Static product data
 │   ├── mens_shoes.js               # Static product data (uses `image` field, not `imageUrl`)
@@ -67,8 +67,8 @@ src/
 └── customer/
     └── components/
         ├── Navigation/
-        │   ├── Navigation.jsx       # Responsive nav; category clicks call useNavigate
-        │   └── navigationData.js    # Category / section / page link data
+        │   ├── Navigation.jsx       # Responsive nav; all items are <Link>; flyout closes on navigation; keyboard accessible
+        │   └── navigationData.js    # Every item has href; categories have top-level href; brands use /brands/:slug
         ├── HomeCarosel/
         │   ├── MainCarosel.jsx      # Hero banner carousel (Unsplash images, 500px, autoPlay)
         │   └── MainCaroselData.js   # Banner slide data with route paths
@@ -77,10 +77,16 @@ src/
         ├── HomeSectionCarosel/
         │   └── HomeSectionCarosel.jsx  # Horizontal section carousel; arrows use AliceCarousel ref API
         ├── pages/
-        │   └── HomePage/
-        │       └── HomePage.jsx     # Home page — hero carousel + 5 product section carousels
+        │   ├── HomePage/
+        │   │   └── HomePage.jsx     # Home page — hero carousel + 5 product section carousels
+        │   ├── CompanyPage/
+        │   │   └── CompanyPage.jsx  # /company — About, Vision, Values, Careers, Contact
+        │   ├── StoresPage/
+        │   │   └── StoresPage.jsx   # /stores — 7 Finnish city cards with address and hours
+        │   └── BrandPage/
+        │       └── BrandPage.jsx    # /brands/:brandSlug — derives name from slug; coming-soon placeholder
         ├── Product/
-        │   ├── Product.jsx          # Product listing page with sidebar filters (uses allProducts from registry)
+        │   ├── Product.jsx          # Collection page; filters by gender + category slug; empty state
         │   ├── ProductCard.jsx      # Clickable product card; navigates to /product/:id; prices in €
         │   ├── ProductDetails.jsx   # Full product detail page — image, price, sizes, qty, Add to Cart
         │   ├── FilterData.jsx       # Filter sidebar config
@@ -97,7 +103,9 @@ src/
 |---|---|---|
 | `/` | `HomePage` | Hero carousel + section carousels |
 | `/home` | `HomePage` | Alias |
-| `/:l1/:l2/:l3` | `Product` | Category product listing; filters by `levelThree` |
+| `/collections/:gender` | `Product` | All products for that gender |
+| `/collections/:gender/:category` | `Product` | Filtered by SLUG_TO_CATEGORY map; empty state if no data |
+| `/brands/:brandSlug` | `BrandPage` | Brand name derived from slug; coming-soon placeholder |
 | `/product/:productId` | `ProductDetails` | Full detail page; ID from productRegistry |
 | `/company` | `CompanyPage` | About, Vision, Values, Careers, Contact |
 | `/stores` | `StoresPage` | 7 Finnish store locations |
@@ -125,15 +133,15 @@ store = {
 
 All product data is currently **static** (no backend calls). The `productRegistry.js` normalises 5 datasets into a single flat array with stable prefix-based IDs:
 
-| Prefix | Dataset | `thirdLavelCategory` | Notes |
-|---|---|---|---|
-| `mk-N` | Men's Kurta | `mens_kurta` | `imageUrl`, numeric prices |
-| `ms-N` | Men's Shirt | `shirt` | `imageUrl`, numeric prices |
-| `msh-N` | Men's Shoes | `men_shoes` | `image` field, string prices (₹ stripped) |
-| `ws-N` | Women's Saree | `saree` | `image` field, string prices (₹ stripped) |
-| `wd-N` | Women's Dress | `women_dress` | `imageUrl`, numeric prices |
+| Prefix | Dataset | `gender` | `thirdLavelCategory` | URL slug |
+|---|---|---|---|---|
+| `mk-N` | Men's Kurta | `men` | `mens_kurta` | `kurtas` |
+| `ms-N` | Men's Shirt | `men` | `shirt` | `shirts` |
+| `msh-N` | Men's Shoes | `men` | `men_shoes` | `shoes` |
+| `ws-N` | Women's Saree | `women` | `saree` | `sarees` |
+| `wd-N` | Women's Dress | `women` | `women_dress` | `dresses` |
 
-`normalize()` sets `thirdLavelCategory` from the call site, not from the raw data — source data had mismatched values (`"Dress"` vs `"women_dress"`, missing values for shoes and sarees). Nav item `id` fields must match these strings exactly for category filtering to work.
+`normalize()` sets both `gender` and `thirdLavelCategory` from the call site. `Product.jsx` maps `gender:slug` → `thirdLavelCategory` via `SLUG_TO_CATEGORY` — add entries here when new datasets are added. Unknown slugs produce an empty state rather than showing all products.
 
 When backend is connected, replace `findProductById` calls in `ProductDetails` with the `findProductById` Redux thunk from `productSlice`.
 
@@ -144,11 +152,12 @@ When backend is connected, replace `findProductById` calls in `ProductDetails` w
 ### What is built
 - **Hero carousel** — Unsplash banner images, autoPlay, dot navigation, clickable slides
 - **Homepage** — 5 product section carousels (Kurta, Shoes, Shirt, Saree, Dress) with working arrows
-- **Navigation** — responsive mobile drawer + desktop flyout; logo links to `/` via React Router `Link`; category clicks navigate to `/:l1/:l2/:l3`; placeholder items (`id: '#'`) are visible but do not navigate; Company/Stores use `Link` with bottom-border hover effect
-- **Category product listing page** — reads `levelThree` from URL params; filters `allProducts` by `thirdLavelCategory`; shows category name as heading; shows empty state when no products match; sidebar filter UI present but not wired to data yet
+- **Navigation** — fully functional desktop flyout + mobile drawer; every item is a `<Link>`; flyout closes on navigation; "Shop all →" link inside each flyout; keyboard accessible (focus styles on all links); mobile literal-string bug fixed; mobile drawer closes on any link click
+- **Collection page** (`/collections/:gender/:category`) — filters by `gender` + slug→category mapping; gender-only route shows full collection; unknown slugs show empty state; heading derived from nav data
+- **Brand page** (`/brands/:brandSlug`) — placeholder page; brand name derived from slug; coming-soon UI
 - **Product detail page** — image, brand, title, EUR price + discount badge, color, size selector (required), quantity +/−, Add to Cart (dispatches Redux thunk), Back link
 - **Company page** (`/company`) — hero, stats bar, Vision, Values grid, Careers listings, Contact; edit data arrays at top of file
-- **Stores page** (`/stores`) — 7 Finnish city cards (Tampere, Helsinki, Turku, Oulu, Lahti, Vaasa, Jyväskylä) each with address, hours, note; phone numbers removed from data; edit `stores` array at top of file
+- **Stores page** (`/stores`) — 7 Finnish city cards (Tampere, Helsinki, Turku, Oulu, Lahti, Vaasa, Jyväskylä) each with address, hours, note; edit `stores` array at top of file
 - **Redux store** — 6 slices (auth, product, cart, order, review, payment); `getUser` dispatched on app mount
 - **Axios API client** — `src/config/api.js`; JWT attached on every request via interceptor
 - **Routing** — full `<Routes>` setup; `BrowserRouter` in `index.js`; `<Provider>` wraps app
@@ -191,7 +200,7 @@ Create `.env.local` to override locally (already git-ignored).
 3. **Product data** — use `productRegistry.js` as the single source. Don't import raw data files directly in components.
 4. **Redux thunks** — all API calls go through slices in `src/Redux/`. Don't call `api.js` directly from components.
 5. **Auth guard** — check `store.auth.user` for logged-in state. The Navigation already has a `true` hardcoded — replace with `Boolean(auth.user)` when auth modal is built.
-6. **New pages** — add the route in `CustomerRoutes.jsx` and uncomment the matching comment block.
+6. **New pages** — add the route in `CustomerRoutes.jsx` and uncomment the matching comment block. For new product categories, also add a `gender:slug → thirdLavelCategory` entry to `SLUG_TO_CATEGORY` in `Product.jsx` and a `gender` + `thirdLavelCategory` arg to the corresponding `normalize()` call in `productRegistry.js`.
 7. **Currency** — display all prices in **€** (EUR). The data prices are numbers (INR values used as placeholder amounts).
 
 ---
@@ -209,3 +218,4 @@ Create `.env.local` to override locally (already git-ignored).
 | 2026-06-02 | Implemented product detail page; productRegistry normalises all datasets with stable IDs; both card types navigate to /product/:id. |
 | 2026-06-03 | Fixed mega menu category navigation: Product.jsx now filters by levelThree URL param; productRegistry passes explicit thirdLavelCategory per dataset; navigationData cleaned up (no broken hrefs, Shoes added to Men accessories); Navigation guards against id '#' clicks. |
 | 2026-06-03 | Made navbar logo a React Router Link to /. Fixed Company/Stores nav links (were broken — no href, id-based). Added CompanyPage (/company) and StoresPage (/stores) with Finnish content. |
+| 2026-06-03 | Full navbar overhaul: all items/subitems are proper Links; routes changed to /collections/:gender/:category; gender field added to productRegistry; SLUG_TO_CATEGORY map in Product.jsx; BrandPage added; mobile literal-string bug fixed; keyboard accessibility added throughout. |
