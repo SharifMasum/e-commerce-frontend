@@ -123,25 +123,27 @@ store = {
 
 All product data is currently **static** (no backend calls). The `productRegistry.js` normalises 5 datasets into a single flat array with stable prefix-based IDs:
 
-| Prefix | Dataset | Notes |
-|---|---|---|
-| `mk-N` | Men's Kurta | `imageUrl`, numeric prices |
-| `ms-N` | Men's Shirt | `imageUrl`, numeric prices |
-| `msh-N` | Men's Shoes | `image` field, string prices (₹ stripped) |
-| `ws-N` | Women's Saree | `image` field, string prices (₹ stripped) |
-| `wd-N` | Women's Dress | `imageUrl`, numeric prices |
+| Prefix | Dataset | `thirdLavelCategory` | Notes |
+|---|---|---|---|
+| `mk-N` | Men's Kurta | `mens_kurta` | `imageUrl`, numeric prices |
+| `ms-N` | Men's Shirt | `shirt` | `imageUrl`, numeric prices |
+| `msh-N` | Men's Shoes | `men_shoes` | `image` field, string prices (₹ stripped) |
+| `ws-N` | Women's Saree | `saree` | `image` field, string prices (₹ stripped) |
+| `wd-N` | Women's Dress | `women_dress` | `imageUrl`, numeric prices |
+
+`normalize()` sets `thirdLavelCategory` from the call site, not from the raw data — source data had mismatched values (`"Dress"` vs `"women_dress"`, missing values for shoes and sarees). Nav item `id` fields must match these strings exactly for category filtering to work.
 
 When backend is connected, replace `findProductById` calls in `ProductDetails` with the `findProductById` Redux thunk from `productSlice`.
 
 ---
 
-## Current State (as of 2026-06-02)
+## Current State (as of 2026-06-03)
 
 ### What is built
 - **Hero carousel** — Unsplash banner images, autoPlay, dot navigation, clickable slides
 - **Homepage** — 5 product section carousels (Kurta, Shoes, Shirt, Saree, Dress) with working arrows
-- **Navigation** — responsive mobile drawer + desktop flyout; category clicks navigate to `/:l1/:l2/:l3`
-- **Product listing page** — sidebar filters (UI only, not wired to data yet), all products from registry
+- **Navigation** — responsive mobile drawer + desktop flyout; category clicks navigate to `/:l1/:l2/:l3`; placeholder items (`id: '#'`) are visible but do not navigate
+- **Category product listing page** — reads `levelThree` from URL params; filters `allProducts` by `thirdLavelCategory`; shows category name as heading; shows empty state when no products match; sidebar filter UI present but not wired to data yet
 - **Product detail page** — image, brand, title, EUR price + discount badge, color, size selector (required), quantity +/−, Add to Cart (dispatches Redux thunk), Back link
 - **Redux store** — 6 slices (auth, product, cart, order, review, payment); `getUser` dispatched on app mount
 - **Axios API client** — `src/config/api.js`; JWT attached on every request via interceptor
@@ -201,3 +203,4 @@ Create `.env.local` to override locally (already git-ignored).
 | 2026-06-02 | Fixed hero carousel: replaced hotlink-blocked images with Unsplash CDN; removed -z-10. |
 | 2026-06-02 | Added Redux Toolkit store with 6 slices; Axios instance with JWT interceptor; Provider in index.js. |
 | 2026-06-02 | Implemented product detail page; productRegistry normalises all datasets with stable IDs; both card types navigate to /product/:id. |
+| 2026-06-03 | Fixed mega menu category navigation: Product.jsx now filters by levelThree URL param; productRegistry passes explicit thirdLavelCategory per dataset; navigationData cleaned up (no broken hrefs, Shoes added to Men accessories); Navigation guards against id '#' clicks. |
